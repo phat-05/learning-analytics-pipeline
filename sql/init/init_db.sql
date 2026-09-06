@@ -363,4 +363,157 @@ CREATE TABLE IF NOT EXISTS quarantine.student_vle (
         PRIMARY KEY (source_file, source_row_number)
 );
 
+CREATE TABLE IF NOT EXISTS mart.dim_week (
+    week_id     SMALLINT GENERATED ALWAYS AS IDENTITY,
+    week_no     SMALLINT NOT NULL,
+    start_day   INTEGER NOT NULL,
+    end_day     INTEGER NOT NULL,
+
+    CONSTRAINT pk_mart_dim_week
+        PRIMARY KEY (week_id),
+
+    CONSTRAINT uq_mart_dim_week
+        UNIQUE (week_no)
+);
+
+CREATE TABLE IF NOT EXISTS mart.dim_module_presentation (
+    module_presentation_id      INTEGER GENERATED ALWAYS AS IDENTITY,
+    code_module                 VARCHAR(5) NOT NULL,
+    code_presentation           VARCHAR(5) NOT NULL,
+    module_presentation_length  INTEGER NOT NULL,
+
+    CONSTRAINT pk_mart_dim_module_presentation
+        PRIMARY KEY (module_presentation_id),
+
+    CONSTRAINT uq_mart_dim_module_presentation
+        UNIQUE (code_module, code_presentation)
+);
+
+CREATE TABLE IF NOT EXISTS mart.dim_assessments (
+    assessment_id           BIGINT GENERATED ALWAYS AS IDENTITY,
+    assessment_no           BIGINT NOT NULL,
+    module_presentation_id  INTEGER NOT NULL,
+    assessment_type         VARCHAR(4) NOT NULL,
+    due_date                INTEGER NULL,
+    weight                  NUMERIC(5,2) NOT NULL,
+    effective_due_week      INTEGER NOT NULL,
+
+    CONSTRAINT pk_mart_dim_assessments
+        PRIMARY KEY (assessment_id),
+
+    CONSTRAINT uq_mart_dim_assessments
+        UNIQUE (assessment_no),
+
+    CONSTRAINT fk_mart_dim_assessments_dim_module_presentation
+        FOREIGN KEY (module_presentation_id)
+        REFERENCES mart.dim_module_presentation (module_presentation_id)
+);
+
+CREATE TABLE IF NOT EXISTS mart.dim_student_module_presentation (
+    student_module_presentation_id  BIGINT GENERATED ALWAYS AS IDENTITY,
+    id_student                      BIGINT NOT NULL,
+    module_presentation_id          INTEGER NOT NULL,
+    gender                          VARCHAR(1) NOT NULL,
+    region                          TEXT NOT NULL,
+    highest_education               TEXT NOT NULL,
+    imd_band                        VARCHAR(7) NULL,
+    age_band                        VARCHAR(5) NOT NULL,
+    disability                      VARCHAR(1) NOT NULL,
+    num_of_prev_attempts            INTEGER NOT NULL,
+    studied_credits                 INTEGER NOT NULL,
+    date_registration               INTEGER NULL,
+    date_unregistration             INTEGER NULL,
+    final_result                    VARCHAR(11) NOT NULL,
+
+    CONSTRAINT pk_mart_dim_student_module_presentation
+        PRIMARY KEY (student_module_presentation_id),
+
+    CONSTRAINT uq_mart_dim_student_module_presentation
+        UNIQUE (id_student, module_presentation_id),
+
+    CONSTRAINT fk_mart_dim_student_module_presentation_dim_module_presentation
+        FOREIGN KEY (module_presentation_id)
+        REFERENCES mart.dim_module_presentation (module_presentation_id)
+);
+
+CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_assessments_week (
+    assessments_week_id                         BIGINT GENERATED ALWAYS AS IDENTITY,
+    assessment_id                               BIGINT NOT NULL,
+    week_id                                     SMALLINT NOT NULL,
+    submitted_student_count_week                BIGINT NOT NULL,
+    submitted_student_count_to_week             BIGINT NOT NULL,
+    late_student_count_to_week                  BIGINT NULL,
+    overdue_unsubmitted_student_count_to_week   BIGINT NOT NULL,
+
+    CONSTRAINT pk_mart_fact_module_presentation_assessments_week
+        PRIMARY KEY (assessments_week_id),
+
+    CONSTRAINT uq_mart_assessments_week
+        UNIQUE (assessment_id, week_id),
+
+    CONSTRAINT fk_mart_fact_module_presentation_assessments_week_dim_assessments
+        FOREIGN KEY (assessment_id)
+        REFERENCES mart.dim_assessments (assessment_id),
+
+    CONSTRAINT fk_mart_fact_module_presentation_assessments_week_dim_week
+        FOREIGN KEY (week_id)
+        REFERENCES mart.dim_week (week_id)
+);
+
+CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_activity_type_week (
+    activity_type_week_id           INTEGER GENERATED ALWAYS AS IDENTITY,
+    module_presentation_id          INTEGER NOT NULL,
+    week_id                         SMALLINT NOT NULL,
+    activity_type                   TEXT NOT NULL,
+    click_count_week                BIGINT NOT NULL,
+    click_count_to_week             BIGINT NOT NULL,
+    active_student_count_week       BIGINT NOT NULL,
+    active_student_count_to_week    BIGINT NOT NULL,
+
+    CONSTRAINT pk_mart_fact_module_presentation_activity_type_week
+        PRIMARY KEY (activity_type_week_id),
+
+    CONSTRAINT uq_mart_activity_type_week
+        UNIQUE (module_presentation_id, activity_type, week_id),
+
+    CONSTRAINT fk_mart_fact_module_presentation_activity_type_week_dim_module_presentation
+        FOREIGN KEY (module_presentation_id)
+        REFERENCES mart.dim_module_presentation (module_presentation_id),
+
+    CONSTRAINT fk_mart_fact_module_presentation_activity_type_week_dim_week
+        FOREIGN KEY (week_id)
+        REFERENCES mart.dim_week (week_id)
+);
+
+CREATE TABLE IF NOT EXISTS mart.fact_student_module_presentation_week (
+    student_week_id                     BIGINT GENERATED ALWAYS AS IDENTITY,
+    student_module_presentation_id      BIGINT NOT NULL,
+    week_id                             SMALLINT NOT NULL,
+    click_count_week                    BIGINT NOT NULL,
+    click_count_to_week                 BIGINT NOT NULL,
+    active_day_count_week               INTEGER NOT NULL,
+    active_day_count_to_week            INTEGER NOT NULL,
+    site_count_to_week                  INTEGER NOT NULL,
+    activity_type_count_to_week         INTEGER NOT NULL,
+    coursework_due_count_to_week        INTEGER NOT NULL,
+    coursework_submitted_count_week     INTEGER NOT NULL,
+    coursework_submitted_count_to_week	INTEGER NOT NULL,
+    coursework_late_count_to_week       INTEGER NOT NULL,
+    coursework_overdue_count_to_week    INTEGER NOT NULL,
+
+    CONSTRAINT pk_mart_fact_student_module_presentation_week
+        PRIMARY KEY (student_week_id),
+
+    CONSTRAINT uq_mart_student_week
+        UNIQUE (student_module_presentation_id, week_id),
+
+    CONSTRAINT fk_mart_fact_student_module_presentation_week_dim_student_module_presentation
+        FOREIGN KEY (student_module_presentation_id)
+        REFERENCES mart.dim_student_module_presentation (student_module_presentation_id),
+
+    CONSTRAINT fk_mart_fact_student_module_presentation_week_dim_week
+        FOREIGN KEY (week_id)
+        REFERENCES mart.dim_week (week_id)
+);
+
 COMMIT;

@@ -5,8 +5,8 @@ import argparse
 
 from learning_analytics.config import DATA_QUALITY_STEPS
 from learning_analytics.database import get_connection, initialize_database
-from learning_analytics.loader import load_raw_snapshot, reset_pipeline_tables
 from learning_analytics.data_quality import validate_and_load_table
+from learning_analytics.extractor import extract_raw_snapshot, reset_pipeline_tables
 
 
 def init_db():
@@ -41,10 +41,10 @@ def run_data_pipeline():
             print("Đặt lại toàn bộ dữ liệu cũ thành công!")
 
             print("-" * 60)
-            curr_step = "Load csv vào raw"
-            print("Đang load dữ liệu từ file csv vào vùng raw ...")
-            load_raw_snapshot(connection)
-            print("Load dữ liệu từ file csv vào vùng raw thành công!")
+            curr_step = "Extract CSV vào raw"
+            print("Đang extract dữ liệu từ file CSV vào vùng raw ...")
+            extract_raw_snapshot(connection)
+            print("Extract dữ liệu từ file CSV vào vùng raw thành công!")
 
             for table_name, sql_file in DATA_QUALITY_STEPS:
                 print("-" * 60)

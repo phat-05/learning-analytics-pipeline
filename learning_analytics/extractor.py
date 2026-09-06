@@ -1,5 +1,5 @@
 """
-Đọc dữ liệu CSV nguồn để chuyển sang các bước xử lý tiếp theo.
+Extract dữ liệu CSV nguồn vào schema raw.
 """
 from psycopg import sql
 
@@ -23,9 +23,9 @@ def reset_pipeline_tables(connection):
     with connection.cursor() as cursor:
         cursor.execute(query)
 
-def copy_source_file_to_raw(connection, file_name):
+def extract_source_file_to_raw(connection, file_name):
     """
-    Nạp một file CSV nguồn vào bảng raw tương ứng.
+    Extract một file CSV nguồn vào bảng raw tương ứng.
     """
     file_path = SOURCE_DATA_DIR / file_name
     table_name = RAW_TABLE_BY_FILE[file_name]
@@ -50,11 +50,11 @@ def copy_source_file_to_raw(connection, file_name):
                 while block := source_file.read(1024 * 1024):
                     copy.write(block)
 
-def load_raw_snapshot(connection):
+def extract_raw_snapshot(connection):
     """
-    Thay toàn bộ snapshot raw bằng bảy file CSV nguồn.
+    Extract bảy file CSV nguồn để tạo snapshot raw.
     """
     validate_source_files()
 
     for file_name in SOURCE_FILES_TEMPLATE:
-        copy_source_file_to_raw(connection, file_name)
+        extract_source_file_to_raw(connection, file_name)
