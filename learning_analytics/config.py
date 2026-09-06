@@ -2,7 +2,6 @@
 Đọc cấu hình kết nối Postgres và đường dẫn dữ liệu từ file .env,
 cung cấp các hằng số dùng chung cho toàn bộ package learning_analytics.
 """
-import csv
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -10,8 +9,8 @@ from dotenv import load_dotenv
 # thư mục gốc của project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# đọc database url từ .env
+# ---------------------------------------------------------------------------------------------
+# database url
 load_dotenv(BASE_DIR / ".env")
 
 DB_USER = os.getenv("DB_USER")
@@ -35,17 +34,15 @@ if _missing:
 DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(
     DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
 )
-
-
+# ---------------------------------------------------------------------------------------------
 # đọc file SQL
 SQL_DIR = BASE_DIR / "sql"
 
-
-def require_sql_file(file_name):
+def require_sql_file(parent ,file_name):
     """
     Trả về đường dẫn file SQL sau khi kiểm tra.
     """
-    file_path = SQL_DIR / file_name
+    file_path = SQL_DIR / parent / file_name
 
     if not file_path.is_file():
         raise FileNotFoundError(
@@ -58,34 +55,54 @@ def require_sql_file(file_name):
     return file_path
 
 
-INIT_SQL_FILE = require_sql_file("init_db.sql")
+INIT_SQL_FILE = require_sql_file("init", "init_db.sql")
 
 DATA_QUALITY_STEPS = (
-    ("courses", require_sql_file("validate_and_load_courses.sql")),
+    ("courses", require_sql_file("load", "validate_and_load_courses.sql")),
     (
         "student_info",
-        require_sql_file("validate_and_load_student_info.sql"),
+        require_sql_file("load", "validate_and_load_student_info.sql"),
     ),
     (
         "student_registration",
-        require_sql_file("validate_and_load_student_registration.sql"),
+        require_sql_file("load", "validate_and_load_student_registration.sql"),
     ),
     (
         "assessments",
-        require_sql_file("validate_and_load_assessments.sql"),
+        require_sql_file("load", "validate_and_load_assessments.sql"),
     ),
     (
         "student_assessment",
-        require_sql_file("validate_and_load_student_assessment.sql"),
+        require_sql_file("load", "validate_and_load_student_assessment.sql"),
     ),
-    ("vle", require_sql_file("validate_and_load_vle.sql")),
+    ("vle", require_sql_file("load", "validate_and_load_vle.sql")),
     (
         "student_vle",
-        require_sql_file("validate_and_load_student_vle.sql"),
+        require_sql_file("load", "validate_and_load_student_vle.sql"),
+    ),
+)
+
+TRANSFORM_STEPS = (
+    (
+        "dim_module_presentation",
+        require_sql_file("transform", "transform_to_dim_module_presentation.sql")
+    ),
+    (
+        "dim_week",
+        require_sql_file("transform","transform_to_dim_week.sql")
+    ),
+    (
+        "dim_assessments",
+        require_sql_file("transform","transform_to_dim_assessments.sql")
+    ),
+    (
+        "dim_student_module_presentation",
+        require_sql_file("transform","transform_to_dim_student_module_presentation.sql")
     ),
 )
 
 
+# ---------------------------------------------------------------------------------------------
 # thư mục dữ liệu nguồn OULAD
 SOURCE_DATA_DIR = BASE_DIR / "data" / "raw"
 
@@ -99,7 +116,9 @@ if not SOURCE_DATA_DIR.is_dir():
         f"Đường dẫn dữ liệu nguồn không phải thư mục: {SOURCE_DATA_DIR}"
     )
 
-# cấu trúc các file CSV nguồn
+
+# ---------------------------------------------------------------------------------------------
+# cấu trúc các file CSV nguồn, dùng để kiểm tra các file csv có đủ và đúng tên, đúng cột
 SOURCE_FILES_TEMPLATE = {
     "courses.csv": [
         "code_module",
@@ -163,6 +182,9 @@ SOURCE_FILES_TEMPLATE = {
 if not SOURCE_FILES_TEMPLATE:
     raise ValueError("Thiếu cấu hình 'SOURCE_FILES_TEMPLATE' trong config!")
 
+
+# ---------------------------------------------------------------------------------------------
+# dict map từ tên file csv sang tên bảng trong schema raw
 RAW_TABLE_BY_FILE = {
     "courses.csv": "courses",
     "studentInfo.csv": "student_info",
@@ -176,5 +198,7 @@ RAW_TABLE_BY_FILE = {
 if not RAW_TABLE_BY_FILE:
     raise ValueError("Thiếu cấu hình 'RAW_TABLE_BY_FILE' trong config!")
 
+
+# ---------------------------------------------------------------------------------------------
 # thư mục lưu logs
 LOG_DIR = BASE_DIR / "logs"

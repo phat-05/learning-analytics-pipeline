@@ -63,3 +63,10 @@ def _validate_csv_header(file_name, expected_columns):
             f"Cột yêu cầu: {expected_columns}. "
             f"Cột thực tế: {actual_columns}"
         )
+
+
+def validate_raw_schema():
+    ...
+
+def validate_clean_schema():
+    ...
