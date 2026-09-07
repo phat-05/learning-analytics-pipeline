@@ -2,7 +2,8 @@
 
 """
 import psycopg
-from learning_analytics.config import DATABASE_URL, INIT_SQL_FILE
+from psycopg import sql
+from elt_pipeline.config import DATABASE_URL, INIT_SQL_FILE, RAW_TABLE_BY_FILE
 
 
 def get_connection():
@@ -32,3 +33,20 @@ def initialize_database():
         with connection.cursor() as cursor:
             cursor.execute(sql_script)
 
+
+def reset_database(connection):
+    """
+    Làm rỗng dữ liệu của các vùng trong database hiện tại.
+    """
+    tables = sql.SQL(", ").join(
+        sql.Identifier(schema_name, table_name)
+        for schema_name in ("raw", "clean", "quarantine")
+        for table_name in RAW_TABLE_BY_FILE.values()
+    )
+
+    query = sql.SQL(
+        "TRUNCATE TABLE {} RESTART IDENTITY"
+    ).format(tables)
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)

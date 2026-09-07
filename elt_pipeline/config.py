@@ -1,16 +1,18 @@
 """
 Đọc cấu hình kết nối Postgres và đường dẫn dữ liệu từ file .env,
-cung cấp các hằng số dùng chung cho toàn bộ package learning_analytics.
+cung cấp các hằng số dùng chung cho toàn bộ package elt_pipeline.
 """
 import os
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 
 # thư mục gốc của project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # ---------------------------------------------------------------------------------------------
-# database url
+# kiểm tra và nhập database url
 load_dotenv(BASE_DIR / ".env")
 
 DB_USER = os.getenv("DB_USER")
@@ -34,8 +36,10 @@ if _missing:
 DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(
     DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
 )
+
+
 # ---------------------------------------------------------------------------------------------
-# đọc file SQL
+# kiểm tra và đọc các file SQL
 SQL_DIR = BASE_DIR / "sql"
 
 def require_sql_file(parent ,file_name):
@@ -57,28 +61,28 @@ def require_sql_file(parent ,file_name):
 
 INIT_SQL_FILE = require_sql_file("init", "init_db.sql")
 
-DATA_QUALITY_STEPS = (
-    ("courses", require_sql_file("load", "validate_and_load_courses.sql")),
+VALIDATE_AND_ROUTE_STEPS = (
+    ("courses", require_sql_file("validate", "validate_and_route_courses.sql")),
     (
         "student_info",
-        require_sql_file("load", "validate_and_load_student_info.sql"),
+        require_sql_file("validate", "validate_and_route_student_info.sql"),
     ),
     (
         "student_registration",
-        require_sql_file("load", "validate_and_load_student_registration.sql"),
+        require_sql_file("validate", "validate_and_route_student_registration.sql"),
     ),
     (
         "assessments",
-        require_sql_file("load", "validate_and_load_assessments.sql"),
+        require_sql_file("validate", "validate_and_route_assessments.sql"),
     ),
     (
         "student_assessment",
-        require_sql_file("load", "validate_and_load_student_assessment.sql"),
+        require_sql_file("validate", "validate_and_route_student_assessment.sql"),
     ),
-    ("vle", require_sql_file("load", "validate_and_load_vle.sql")),
+    ("vle", require_sql_file("validate", "validate_and_route_vle.sql")),
     (
         "student_vle",
-        require_sql_file("load", "validate_and_load_student_vle.sql"),
+        require_sql_file("validate", "validate_and_route_student_vle.sql"),
     ),
 )
 
@@ -99,11 +103,23 @@ TRANSFORM_STEPS = (
         "dim_student_module_presentation",
         require_sql_file("transform","transform_to_dim_student_module_presentation.sql")
     ),
+    (
+        "fact_module_presentation_activity_type_week",
+        require_sql_file("transform","transform_to_fact_module_presentation_activity_type_week.sql")
+    ),
+    (
+        "fact_module_presentation_assessments_week",
+        require_sql_file("transform","transform_to_fact_module_presentation_assessments_week.sql")
+    ),
+    (
+        "fact_student_module_presentation_week",
+        require_sql_file("transform","transform_to_fact_student_module_presentation_week.sql")
+    )
 )
 
 
 # ---------------------------------------------------------------------------------------------
-# thư mục dữ liệu nguồn OULAD
+# kiểm tra thư mục dữ liệu nguồn OULAD
 SOURCE_DATA_DIR = BASE_DIR / "data" / "raw"
 
 if not SOURCE_DATA_DIR.exists():

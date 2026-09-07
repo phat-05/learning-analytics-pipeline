@@ -2,28 +2,11 @@
 Extract dữ liệu CSV nguồn vào schema raw.
 """
 from psycopg import sql
+from elt_pipeline.config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE, RAW_TABLE_BY_FILE
+from elt_pipeline.source_validation import validate_source_files
 
-from learning_analytics.config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE, RAW_TABLE_BY_FILE
-from learning_analytics.validators import validate_source_files
 
-def reset_pipeline_tables(connection):
-    """
-    Làm rỗng dữ liệu của snapshot pipeline hiện tại.
-    """
-    tables = sql.SQL(", ").join(
-        sql.Identifier(schema_name, table_name)
-        for schema_name in ("raw", "clean", "quarantine")
-        for table_name in RAW_TABLE_BY_FILE.values()
-    )
-
-    query = sql.SQL(
-        "TRUNCATE TABLE {} RESTART IDENTITY"
-    ).format(tables)
-
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-
-def extract_source_file_to_raw(connection, file_name):
+def extract_and_load_source_file_to_raw(connection, file_name):
     """
     Extract một file CSV nguồn vào bảng raw tương ứng.
     """
@@ -50,11 +33,12 @@ def extract_source_file_to_raw(connection, file_name):
                 while block := source_file.read(1024 * 1024):
                     copy.write(block)
 
-def extract_raw_snapshot(connection):
+
+def extract_and_load_all_source_file_to_raw(connection):
     """
     Extract bảy file CSV nguồn để tạo snapshot raw.
     """
     validate_source_files()
 
     for file_name in SOURCE_FILES_TEMPLATE:
-        extract_source_file_to_raw(connection, file_name)
+        extract_and_load_source_file_to_raw(connection, file_name)

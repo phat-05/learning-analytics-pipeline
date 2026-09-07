@@ -467,8 +467,9 @@ CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_activity_type_week (
     activity_type                   TEXT NOT NULL,
     click_count_week                BIGINT NOT NULL,
     click_count_to_week             BIGINT NOT NULL,
+    median_student_click_count_week NUMERIC(12, 2) NULL,
     active_student_count_week       BIGINT NOT NULL,
-    active_student_count_to_week    BIGINT NOT NULL,
+    accessed_site_count_week        INTEGER NOT NULL,
 
     CONSTRAINT pk_mart_fact_module_presentation_activity_type_week
         PRIMARY KEY (activity_type_week_id),

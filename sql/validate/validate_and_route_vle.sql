@@ -1,6 +1,4 @@
 DROP TABLE IF EXISTS pg_temp.vle_validation;
-
--- Chuan hoa chuoi va giu lai gia tri nguon de dua vao quarantine khi can.
 CREATE TEMP TABLE vle_validation AS
 WITH prepared_vle AS (
     SELECT

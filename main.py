@@ -3,11 +3,10 @@
 """
 import argparse
 
-from learning_analytics.config import DATA_QUALITY_STEPS
-from learning_analytics.database import get_connection, initialize_database
-from learning_analytics.data_quality import validate_and_load_table
-from learning_analytics.extractor import extract_raw_snapshot, reset_pipeline_tables
-
+from elt_pipeline.database import get_connection, initialize_database, reset_database
+from elt_pipeline.raw_validation import validate_and_route_all_tables
+from elt_pipeline.extraction import extract_and_load_all_source_file_to_raw
+from elt_pipeline.transformation import transform_all_tables
 
 def init_db():
     """
@@ -37,31 +36,24 @@ def run_data_pipeline():
     try:
         with (get_connection() as connection):
             print("Đang đặt lại toàn bộ dữ liệu cũ ...")
-            reset_pipeline_tables(connection)
+            reset_database(connection)
             print("Đặt lại toàn bộ dữ liệu cũ thành công!")
 
             print("-" * 60)
             curr_step = "Extract CSV vào raw"
             print("Đang extract dữ liệu từ file CSV vào vùng raw ...")
-            extract_raw_snapshot(connection)
+            extract_and_load_all_source_file_to_raw(connection)
             print("Extract dữ liệu từ file CSV vào vùng raw thành công!")
 
-            for table_name, sql_file in DATA_QUALITY_STEPS:
-                print("-" * 60)
-                curr_step = f"Kiểm tra và load raw.{table_name}"
-                print(f"Đang kiểm tra và load raw.{table_name} ...")
+            curr_step = "Kiểm tra chất lượng dữ liệu"
+            print("Đang kiểm tra chất lượng dữ liệu ...")
+            validate_and_route_all_tables(connection)
+            print("Kiểm tra chất lượng dữ liệu thành công!")
 
-                sql_script = sql_file.read_text(encoding="utf-8")
-                _, clean_count, quarantine_count = (
-                    validate_and_load_table(connection, sql_script)
-                )
-
-                print(f"Xử lý {table_name} thành công!")
-                print(f"Số bản ghi đã load vào clean: {clean_count}")
-                print(
-                    "Số bản ghi đã load vào quarantine: "
-                    f"{quarantine_count}"
-                )
+            curr_step = "Tổng hợp dữ liệu vào data warehouse"
+            print("Đang tổng hợp dữ liệu vào data warehouse ...")
+            transform_all_tables(connection)
+            print("Kiểm tra chất lượng dữ liệu thành công!")
 
         print("-" * 60)
         print("Pipeline xử lý dữ liệu hoàn tất!")
