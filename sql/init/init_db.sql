@@ -437,13 +437,14 @@ CREATE TABLE IF NOT EXISTS mart.dim_student_module_presentation (
 );
 
 CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_assessments_week (
-    assessments_week_id                         BIGINT GENERATED ALWAYS AS IDENTITY,
-    assessment_id                               BIGINT NOT NULL,
-    week_id                                     SMALLINT NOT NULL,
-    submitted_student_count_week                BIGINT NOT NULL,
-    submitted_student_count_to_week             BIGINT NOT NULL,
-    late_student_count_to_week                  BIGINT NULL,
-    overdue_unsubmitted_student_count_to_week   BIGINT NOT NULL,
+    assessments_week_id                             BIGINT GENERATED ALWAYS AS IDENTITY,
+    assessment_id                                   BIGINT NOT NULL,
+    week_id                                         SMALLINT NOT NULL,
+    submitted_student_count_week                    BIGINT NOT NULL,
+    submitted_student_count_to_week                 BIGINT NOT NULL,
+    late_student_count_week                         BIGINT NOT NULL,
+    late_student_count_to_week                      BIGINT NOT NULL,
+    overdue_unsubmitted_student_count_at_week_end   BIGINT NOT NULL,
 
     CONSTRAINT pk_mart_fact_module_presentation_assessments_week
         PRIMARY KEY (assessments_week_id),

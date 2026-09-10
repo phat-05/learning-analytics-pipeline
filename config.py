@@ -8,7 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # thư mục gốc của project
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
 
 # ---------------------------------------------------------------------------------------------
@@ -33,9 +33,7 @@ _missing = [key for key, val in _url_required.items() if not val]
 if _missing:
     raise ValueError(f"Thiếu biến môi trường trong .env: {', '.join(_missing)}")
 
-DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(
-    DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
-)
+DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -49,9 +47,7 @@ def require_sql_file(parent ,file_name):
     file_path = SQL_DIR / parent / file_name
 
     if not file_path.is_file():
-        raise FileNotFoundError(
-            f"Không tìm thấy file SQL: {file_path}"
-        )
+        raise FileNotFoundError(f"Không tìm thấy file SQL: {file_path}")
 
     if not file_path.read_text(encoding="utf-8").strip():
         raise ValueError(f"File {file_name} đang trống!")
@@ -117,20 +113,16 @@ TRANSFORM_STEPS = (
     )
 )
 
-
+GET_TRAIN_DATA_FILE = require_sql_file("get_data", "get_train_data.sql")
 # ---------------------------------------------------------------------------------------------
 # kiểm tra thư mục dữ liệu nguồn OULAD
 SOURCE_DATA_DIR = BASE_DIR / "data" / "raw"
 
 if not SOURCE_DATA_DIR.exists():
-    raise FileNotFoundError(
-        f"Không tìm thấy thư mục dữ liệu nguồn: {SOURCE_DATA_DIR}"
-    )
+    raise FileNotFoundError(f"Không tìm thấy thư mục dữ liệu nguồn: {SOURCE_DATA_DIR}")
 
 if not SOURCE_DATA_DIR.is_dir():
-    raise NotADirectoryError(
-        f"Đường dẫn dữ liệu nguồn không phải thư mục: {SOURCE_DATA_DIR}"
-    )
+    raise NotADirectoryError(f"Đường dẫn dữ liệu nguồn không phải thư mục: {SOURCE_DATA_DIR}")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -216,5 +208,49 @@ if not RAW_TABLE_BY_FILE:
 
 
 # ---------------------------------------------------------------------------------------------
+# danh sách các bảng trong vùng mart
+MART_TABLES = {
+    "fact_module_presentation_assessments_week",
+    "fact_module_presentation_activity_type_week",
+    "fact_student_module_presentation_week",
+    "dim_assessments",
+    "dim_student_module_presentation",
+    "dim_week",
+    "dim_module_presentation"
+}
+
+
+# ---------------------------------------------------------------------------------------------
+# danh sách các cột cần thiết cho mô hình và dự đoán
+MODEL_FEATURES = {
+    "id_student": "int64",
+    "code_module": "str",
+    "code_presentation": "str",
+    "week_no": "int64",
+    "gender": "str",
+    "region": "str",
+    "highest_education": "str",
+    "imd_band": "str",
+    "age_band": "str",
+    "disability": "str",
+    "num_of_prev_attempts": "int64",
+    "studied_credits": "int64",
+    "click_count_week": "int64",
+    "click_count_to_week": "int64",
+    "active_day_count_week": "int64",
+    "active_day_count_to_week": "int64",
+    "site_count_to_week": "int64",
+    "activity_type_count_to_week": "int64",
+    "coursework_due_count_to_week": "int64",
+    "coursework_submitted_count_week": "int64",
+    "coursework_submitted_count_to_week": "int64",
+    "coursework_late_count_to_week": "int64",
+    "coursework_overdue_count_to_week": "int64",
+    "final_result": "str"
+}
+
+
+# ---------------------------------------------------------------------------------------------
 # thư mục lưu logs
 LOG_DIR = BASE_DIR / "logs"
+

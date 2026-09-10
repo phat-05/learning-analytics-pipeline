@@ -1,0 +1,21 @@
+{
+  "os":  "Windows-11-10.0.26200-SP0",
+  "python":  "CPython 3.14.4",
+  "startedAt":  "2026-09-09T21:22:59.792763Z",
+  "args":  [
+    "-f",
+    "C:\\Users\\THANHP~1\\AppData\\Local\\Temp\\kernel-3af59687-45f7-4922-a9da-f0e0b0c16fce8917212046712911727\\connection.json",
+    "--IPCompleter.use_jedi=False",
+    "--IPKernelApp.log_level=INFO"
+  ],
+  "program":  "<python with no main file>",
+  "git":  {
+    "remote":  "https://github.com/phat-05/learning-analytics-pipeline.git",
+    "commit":  "cf89ccfeb674a00bb8845834ba2d069ffa174b5a"
+  },
+  "email":  "phamphat.230905@gmail.com",
+  "root":  "D:\\OU\\253\\DO_AN_NGANH\\WORKSPACE\\learning-analytics-pipeline\\notebook",
+  "host":  "T-PHAT",
+  "executable":  "D:\\OU\\253\\DO_AN_NGANH\\WORKSPACE\\learning-analytics-pipeline\\.venv\\Scripts\\python.exe",
+  "writerId":  "kfp5kjt4kkwcr8f2yse58mlxv7s7h043"
+}

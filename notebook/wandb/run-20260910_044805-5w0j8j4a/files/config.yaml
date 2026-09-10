@@ -1,0 +1,44 @@
+_wandb:
+    value:
+        cli_version: 0.30.0
+        e:
+            m97k33g68t23cy89rqsayy7143qnicga:
+                args:
+                    - -f
+                    - C:\Users\THANHP~1\AppData\Local\Temp\kernel-28b3b006-d723-4d32-8ae8-a658a1d2bd644217747933142041899\connection.json
+                    - --IPCompleter.use_jedi=False
+                    - --IPKernelApp.log_level=INFO
+                email: phamphat.230905@gmail.com
+                executable: D:\OU\253\DO_AN_NGANH\WORKSPACE\learning-analytics-pipeline\.venv\Scripts\python.exe
+                git:
+                    commit: cf89ccfeb674a00bb8845834ba2d069ffa174b5a
+                    remote: https://github.com/phat-05/learning-analytics-pipeline.git
+                host: T-PHAT
+                os: Windows-11-10.0.26200-SP0
+                program: <python with no main file>
+                python: CPython 3.14.4
+                root: D:\OU\253\DO_AN_NGANH\WORKSPACE\learning-analytics-pipeline\notebook
+                startedAt: "2026-09-09T21:48:05.217402Z"
+                writerId: m97k33g68t23cy89rqsayy7143qnicga
+        m: []
+        python_version: 3.14.4
+        t:
+            "1":
+                - 5
+                - 53
+            "2":
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.14.4
+            "5": 0.30.0
+            "8":
+                - 3
+                - 13
+            "12": 0.30.0
+            "13": windows-amd64
+model:
+    value: DummyClassifier

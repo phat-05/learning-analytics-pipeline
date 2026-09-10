@@ -2,7 +2,7 @@
 Các hàm kiểm tra dữ liệu trong quá trình pipeline xử lý.
 """
 import csv
-from elt_pipeline.config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE
+from config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE
 
 
 def validate_source_files():
@@ -46,11 +46,7 @@ def _validate_csv_header(file_name, expected_columns):
     """
     file_path = SOURCE_DATA_DIR / file_name
 
-    with file_path.open(
-        mode="r",
-        encoding="utf-8-sig",
-        newline="",
-    ) as csv_file:
+    with file_path.open(mode="r",encoding="utf-8-sig",newline="",) as csv_file:
         actual_columns = next(csv.reader(csv_file), None)
 
     if actual_columns is None:

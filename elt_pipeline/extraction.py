@@ -2,7 +2,7 @@
 Extract dữ liệu CSV nguồn vào schema raw.
 """
 from psycopg import sql
-from elt_pipeline.config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE, RAW_TABLE_BY_FILE
+from config import SOURCE_DATA_DIR, SOURCE_FILES_TEMPLATE, RAW_TABLE_BY_FILE
 from elt_pipeline.source_validation import validate_source_files
 
 
@@ -14,9 +14,7 @@ def extract_and_load_source_file_to_raw(connection, file_name):
     table_name = RAW_TABLE_BY_FILE[file_name]
     columns = SOURCE_FILES_TEMPLATE[file_name]
 
-    column_names = sql.SQL(", ").join(
-        sql.Identifier(column) for column in columns
-    )
+    column_names = sql.SQL(", ").join(sql.Identifier(column) for column in columns)
 
     copy_query = sql.SQL(
         "COPY {} ({}) FROM STDIN "

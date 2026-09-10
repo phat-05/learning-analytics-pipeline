@@ -1,0 +1,9 @@
+
+def get_model():
+    ...
+
+def predict():
+    ...
+
+def save_prediction():
+    ...

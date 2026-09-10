@@ -3,7 +3,7 @@
 """
 import psycopg
 from psycopg import sql
-from elt_pipeline.config import DATABASE_URL, INIT_SQL_FILE, RAW_TABLE_BY_FILE
+from config import DATABASE_URL, INIT_SQL_FILE, RAW_TABLE_BY_FILE, MART_TABLES
 
 
 def get_connection():
@@ -20,6 +20,7 @@ def test_connection():
     with get_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT current_database()")
+
             return cursor.fetchone()[0]
 
 
@@ -38,15 +39,15 @@ def reset_database(connection):
     """
     Làm rỗng dữ liệu của các vùng trong database hiện tại.
     """
-    tables = sql.SQL(", ").join(
+    tables = [
         sql.Identifier(schema_name, table_name)
         for schema_name in ("raw", "clean", "quarantine")
         for table_name in RAW_TABLE_BY_FILE.values()
-    )
+    ]
 
-    query = sql.SQL(
-        "TRUNCATE TABLE {} RESTART IDENTITY"
-    ).format(tables)
+    tables.extend(sql.Identifier("mart", table_name) for table_name in MART_TABLES)
+
+    query = sql.SQL("TRUNCATE TABLE {} RESTART IDENTITY").format(sql.SQL(", ").join(tables))
 
     with connection.cursor() as cursor:
         cursor.execute(query)

@@ -1,4 +1,4 @@
-from elt_pipeline.config import TRANSFORM_STEPS
+from config import TRANSFORM_STEPS
 
 
 def transform_table(connection, sql_script):
@@ -9,13 +9,21 @@ def transform_table(connection, sql_script):
     with connection.cursor() as cursor:
         cursor.execute(sql_script)
 
-        row_count = cursor.fetchone()[0]
+        while True:
+            if cursor.description is not None:
+                result = cursor.fetchone()
+                if result is not None:
+                    row_count = result[0]
 
-    if not row_count:
-        raise RuntimeError(
-            "Đối soát thất bại: "
-            f"đã transform {row_count} dòng vào mart."
-        )
+            if not cursor.nextset():
+                break
+
+    if row_count is None:
+        raise RuntimeError("Không nhận được kết quả đối chiếu mart")
+
+    if row_count == 0:
+        raise RuntimeError(f"Đối chiếu thất bại: đã transform {row_count} dòng vào mart.")
+
     return row_count
 
 
@@ -25,7 +33,7 @@ def transform_all_tables(connection):
     """
     for table_name, sql_file in TRANSFORM_STEPS:
         print("-" * 60)
-        print(f"Đang kiểm tra và load raw.{table_name} ...")
+        print(f"Đang biến đổi dữ liệu vào bảng mart.{table_name} ...")
 
         sql_script = sql_file.read_text(encoding="utf-8")
         row_count = transform_table(connection, sql_script)

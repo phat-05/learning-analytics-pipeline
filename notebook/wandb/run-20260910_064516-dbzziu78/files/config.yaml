@@ -1,0 +1,155 @@
+_wandb:
+    value:
+        cli_version: 0.30.0
+        e:
+            jfbv89v96jko1g79wi8rfvoqacvp2lov:
+                args:
+                    - -f
+                    - C:\Users\THANHP~1\AppData\Local\Temp\kernel-28b3b006-d723-4d32-8ae8-a658a1d2bd644217747933142041899\connection.json
+                    - --IPCompleter.use_jedi=False
+                    - --IPKernelApp.log_level=INFO
+                cpu_count: 8
+                cpu_count_logical: 12
+                cudaVersion: "13.1"
+                disk:
+                    /:
+                        total: "299667288064"
+                        used: "122347929600"
+                email: phamphat.230905@gmail.com
+                executable: D:\OU\253\DO_AN_NGANH\WORKSPACE\learning-analytics-pipeline\.venv\Scripts\python.exe
+                git:
+                    commit: cf89ccfeb674a00bb8845834ba2d069ffa174b5a
+                    remote: https://github.com/phat-05/learning-analytics-pipeline.git
+                gpu: NVIDIA GeForce RTX 2050
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 2048
+                      memoryTotal: "4294967296"
+                      name: NVIDIA GeForce RTX 2050
+                      uuid: GPU-a817e427-c9b9-db8b-3456-3395839495bf
+                host: T-PHAT
+                memory:
+                    total: "8279416832"
+                os: Windows-11-10.0.26200-SP0
+                program: <python with no main file>
+                python: CPython 3.14.4
+                root: D:\OU\253\DO_AN_NGANH\WORKSPACE\learning-analytics-pipeline\notebook
+                startedAt: "2026-09-09T23:45:16.871046Z"
+                writerId: jfbv89v96jko1g79wi8rfvoqacvp2lov
+        m: []
+        python_version: 3.14.4
+        t:
+            "1":
+                - 5
+                - 53
+            "2":
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+                - 78
+            "4": 3.14.4
+            "5": 0.30.0
+            "8":
+                - 3
+                - 13
+            "12": 0.30.0
+            "13": windows-amd64
+        visualize:
+            calibration_curve:
+                panel_config:
+                    fieldSettings:
+                        stroke: null
+                        x: predicted
+                        "y": observed
+                    panelDefId: wandb/line/v0
+                    stringSettings:
+                        title: ""
+                    transform:
+                        name: tableWithLeafColNames
+                    userQuery:
+                        queryFields:
+                            - args:
+                                - name: runSets
+                                  value: ${runSets}
+                              fields:
+                                - fields: []
+                                  name: id
+                                - fields: []
+                                  name: name
+                                - fields: []
+                                  name: _defaultColorIndex
+                                - args:
+                                    - name: tableKey
+                                      value: calibration_curve_table
+                                  fields: []
+                                  name: summaryTable
+                              name: runSets
+                panel_type: Vega2
+            confusion_matrix:
+                panel_config:
+                    fieldSettings:
+                        Actual: Actual
+                        Predicted: Predicted
+                        nPredictions: nPredictions
+                    panelDefId: wandb/confusion_matrix/v1
+                    stringSettings:
+                        title: Confusion Matrix Curve
+                    transform:
+                        name: tableWithLeafColNames
+                    userQuery:
+                        queryFields:
+                            - args:
+                                - name: runSets
+                                  value: ${runSets}
+                              fields:
+                                - fields: []
+                                  name: id
+                                - fields: []
+                                  name: name
+                                - fields: []
+                                  name: _defaultColorIndex
+                                - args:
+                                    - name: tableKey
+                                      value: confusion_matrix_table
+                                  fields: []
+                                  name: summaryTable
+                              name: runSets
+                panel_type: Vega2
+            pr_curve:
+                panel_config:
+                    fieldSettings:
+                        class: class
+                        x: recall
+                        "y": precision
+                    panelDefId: wandb/area-under-curve/v0
+                    stringSettings:
+                        title: Precision-Recall Curve
+                        x-axis-title: Recall
+                        y-axis-title: Precision
+                    transform:
+                        name: tableWithLeafColNames
+                    userQuery:
+                        queryFields:
+                            - args:
+                                - name: runSets
+                                  value: ${runSets}
+                              fields:
+                                - fields: []
+                                  name: id
+                                - fields: []
+                                  name: name
+                                - fields: []
+                                  name: _defaultColorIndex
+                                - args:
+                                    - name: tableKey
+                                      value: pr_curve_table
+                                  fields: []
+                                  name: summaryTable
+                              name: runSets
+                panel_type: Vega2
+model:
+    value: LogisticRegression Tuned
