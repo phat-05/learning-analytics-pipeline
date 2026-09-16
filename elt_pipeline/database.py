@@ -3,7 +3,7 @@
 """
 import psycopg
 from psycopg import sql
-from config import DATABASE_URL, INIT_SQL_FILE, RAW_TABLE_BY_FILE, MART_TABLES
+from config import DATABASE_URL, INIT_SQL_FILE, RAW_TABLE_BY_FILE, MART_TABLES, PREDICTION_TABLES
 
 
 def get_connection():
@@ -45,6 +45,7 @@ def reset_database(connection):
         for table_name in RAW_TABLE_BY_FILE.values()
     ]
 
+    tables.extend(sql.Identifier("prediction", table_name) for table_name in PREDICTION_TABLES)
     tables.extend(sql.Identifier("mart", table_name) for table_name in MART_TABLES)
 
     query = sql.SQL("TRUNCATE TABLE {} RESTART IDENTITY").format(sql.SQL(", ").join(tables))

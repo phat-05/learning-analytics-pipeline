@@ -222,3 +222,5 @@ map.md
 data/**/*.csv
 data/*
 data
+notebook/wandb
+notebook/wandb/*

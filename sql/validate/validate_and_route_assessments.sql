@@ -1,6 +1,8 @@
+--Xoá bảng bảng tạm trong csdl, để ko bị lỗi trùng bảng
 DROP TABLE IF EXISTS pg_temp.assessments_validation;
 
 CREATE TEMP TABLE assessments_validation AS
+--Tạo CTE với các dòng nguyên bản và đã xử lý trim
 WITH prepared_assessments AS (
     SELECT
         source_row_number,
@@ -12,6 +14,7 @@ WITH prepared_assessments AS (
         date AS raw_date,
         weight AS raw_weight,
 
+        --nullif giúp biến chuỗi rỗng thành null
         NULLIF(BTRIM(code_module), '') AS clean_code_module,
         NULLIF(BTRIM(code_presentation), '') AS clean_code_presentation,
         NULLIF(BTRIM(id_assessment), '') AS id_assessment_text,
@@ -20,10 +23,11 @@ WITH prepared_assessments AS (
         NULLIF(BTRIM(weight), '') AS weight_text
     FROM raw.assessments
 ),
-
+--CTE với các cột số, kiểm tra số có hợp lệ và chuyển thành numeric
 parsed_assessments AS (
     SELECT
         *,
+        --Cờ số hợp lệ (chỉ chứa số, chưa xét kiểu dữ liệu)
         id_assessment_text ~ '^[+-]?[0-9]+$'
             AS id_assessment_is_integer,
         date_text ~ '^[+-]?[0-9]+$'
@@ -33,7 +37,9 @@ parsed_assessments AS (
 
         CASE
             WHEN id_assessment_text ~ '^[+-]?[0-9]+$'
-                 AND LENGTH(LTRIM(id_assessment_text, '+-')) <= 19
+                --Điều kiện giúp loại những số vượt qua phạm vi BIGINT
+                AND LENGTH(LTRIM(id_assessment_text, '+-')) <= 19
+            --Giữ numeric vì nếu số 19 chữ số mà lớn hơn BIGINT sẽ gây lỗi, làm cash pipeline
             THEN id_assessment_text::NUMERIC
         END AS parsed_id_assessment,
 
@@ -68,7 +74,6 @@ SELECT
                 'message', 'Ma hoc phan dai qua 3 ky tu'
             )
         END,
-
         CASE
             WHEN clean_code_presentation IS NULL
             THEN JSONB_BUILD_OBJECT(
@@ -100,6 +105,7 @@ SELECT
             WHEN LENGTH(LTRIM(id_assessment_text, '+-')) > 19
                  OR parsed_id_assessment NOT BETWEEN
                     -9223372036854775808 AND 9223372036854775807
+            ---9223372036854775808 AND 9223372036854775807 là miền giá trị hợp lệ của bigint
             THEN JSONB_BUILD_OBJECT(
                 'column', 'id_assessment',
                 'code', 'BIGINT_OUT_OF_RANGE',
@@ -148,6 +154,7 @@ SELECT
                     LENGTH(LTRIM(date_text, '+-')) > 10
                     OR parsed_date NOT BETWEEN
                         -2147483648 AND 2147483647
+                    ---2147483648 AND 2147483647: miền của integer
                  )
             THEN JSONB_BUILD_OBJECT(
                 'column', 'date',
@@ -191,10 +198,12 @@ SELECT
         parsed_date,
         parsed_weight
     ) AS row_signature,
+    --giữ chổ để update
     NULL::JSONB AS first_row_signature,
     NULL::BIGINT AS valid_row_rank
 FROM parsed_assessments;
 
+--Tạo index và yêu cấu csdl quét lại cấu trúc bảng, giúp tăng tốc truy vấn
 CREATE UNIQUE INDEX assessments_validation_source_row_idx
     ON assessments_validation (source_row_number);
 
@@ -208,6 +217,7 @@ SET error_details = assessment.error_details || JSONB_BUILD_ARRAY(
         'message', 'Hoc phan khong ton tai trong clean.courses'
     )
 )
+--Những dòng có khoá ngoại không tồn tại sẽ được ghi lỗi
 WHERE JSONB_ARRAY_LENGTH(assessment.error_details) = 0
   AND NOT EXISTS (
       SELECT 1
@@ -219,6 +229,7 @@ WHERE JSONB_ARRAY_LENGTH(assessment.error_details) = 0
 WITH ranked_valid_assessments AS (
     SELECT
         source_row_number,
+        --Chia thành bảng thành các partition, vào đánh số riêng để xác định dòng dữ liệu đầu tiên
         ROW_NUMBER() OVER (
             PARTITION BY parsed_id_assessment
             ORDER BY source_row_number
@@ -237,6 +248,7 @@ SET valid_row_rank = ranked.valid_row_rank,
 FROM ranked_valid_assessments AS ranked
 WHERE assessment.source_row_number = ranked.source_row_number;
 
+--Dòng nào xuất hiện sau và có khoá trùng sẽ ghi nhận lỗi
 UPDATE assessments_validation
 SET error_details = error_details || JSONB_BUILD_ARRAY(
     JSONB_BUILD_OBJECT(

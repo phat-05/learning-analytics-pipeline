@@ -19,14 +19,14 @@ def validate_and_route_table(connection, sql_script):
 
     if reconciliation is None:
         raise RuntimeError(
-            "Không nhận được kết quả đối chiếu"
+            "Không nhận được kết quả đối soát"
         )
 
     raw_count, clean_count, quarantine_count, is_reconciled = reconciliation
 
     if not is_reconciled:
         raise RuntimeError(
-            "Đối chiếu thất bại: "
+            "Đối soát thất bại: "
             f"raw={raw_count}, "
             f"clean={clean_count}, "
             f"quarantine={quarantine_count}"

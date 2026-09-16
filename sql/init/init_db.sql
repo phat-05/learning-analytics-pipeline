@@ -1,5 +1,4 @@
 BEGIN;
-
 CREATE SCHEMA IF NOT EXISTS raw;
 CREATE SCHEMA IF NOT EXISTS clean;
 CREATE SCHEMA IF NOT EXISTS quarantine;
@@ -10,6 +9,7 @@ CREATE TABLE IF NOT EXISTS raw.courses (
     code_module                TEXT,
     code_presentation          TEXT,
     module_presentation_length TEXT,
+    --Bắt đầu từ 2 vì dòng 1 là header của csv
     source_row_number          BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 2)
 );
 
@@ -83,9 +83,6 @@ CREATE TABLE IF NOT EXISTS clean.courses (
     module_presentation_length INTEGER NOT NULL,
 
     CONSTRAINT pk_clean_courses
-
-
-
         PRIMARY KEY (code_module, code_presentation)
 );
 
@@ -208,6 +205,9 @@ CREATE TABLE IF NOT EXISTS clean.vle (
 );
 
 CREATE TABLE IF NOT EXISTS clean.student_vle (
+--Dùng khoá nhân tạo do khi đưa dữ liệu vào clean các dòng
+--có thể trùng cả 4 khoá chính tự nhiên chỉ khác sum_click
+--nên cần 1 khoá nhân tạo để quản lý
     student_vle_id    BIGINT GENERATED ALWAYS AS IDENTITY,
     code_module       VARCHAR(3) NOT NULL,
     code_presentation VARCHAR(5) NOT NULL,
@@ -363,6 +363,7 @@ CREATE TABLE IF NOT EXISTS quarantine.student_vle (
         PRIMARY KEY (source_file, source_row_number)
 );
 
+--grain: 1 tuần
 CREATE TABLE IF NOT EXISTS mart.dim_week (
     week_id     SMALLINT GENERATED ALWAYS AS IDENTITY,
     week_no     SMALLINT NOT NULL,
@@ -376,9 +377,10 @@ CREATE TABLE IF NOT EXISTS mart.dim_week (
         UNIQUE (week_no)
 );
 
+--grain: 1 học phần trong 1 lần mở học phần
 CREATE TABLE IF NOT EXISTS mart.dim_module_presentation (
     module_presentation_id      INTEGER GENERATED ALWAYS AS IDENTITY,
-    code_module                 VARCHAR(5) NOT NULL,
+    code_module                 VARCHAR(3) NOT NULL,
     code_presentation           VARCHAR(5) NOT NULL,
     module_presentation_length  INTEGER NOT NULL,
 
@@ -389,6 +391,7 @@ CREATE TABLE IF NOT EXISTS mart.dim_module_presentation (
         UNIQUE (code_module, code_presentation)
 );
 
+--grain: 1 assessment trong 1 học phần trong 1 lần mở học phần
 CREATE TABLE IF NOT EXISTS mart.dim_assessments (
     assessment_id           BIGINT GENERATED ALWAYS AS IDENTITY,
     assessment_no           BIGINT NOT NULL,
@@ -409,6 +412,7 @@ CREATE TABLE IF NOT EXISTS mart.dim_assessments (
         REFERENCES mart.dim_module_presentation (module_presentation_id)
 );
 
+--grain: 1 sinh viên trong 1 học phần trong 1 lần mở học phần
 CREATE TABLE IF NOT EXISTS mart.dim_student_module_presentation (
     student_module_presentation_id  BIGINT GENERATED ALWAYS AS IDENTITY,
     id_student                      BIGINT NOT NULL,
@@ -436,6 +440,7 @@ CREATE TABLE IF NOT EXISTS mart.dim_student_module_presentation (
         REFERENCES mart.dim_module_presentation (module_presentation_id)
 );
 
+--grain: 1 assessment trong 1 module 1 presentation 1 tuần
 CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_assessments_week (
     assessments_week_id                             BIGINT GENERATED ALWAYS AS IDENTITY,
     assessment_id                                   BIGINT NOT NULL,
@@ -461,6 +466,7 @@ CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_assessments_week (
         REFERENCES mart.dim_week (week_id)
 );
 
+--grain: 1 loại vle trong 1 module 1 presentation 1 tuần
 CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_activity_type_week (
     activity_type_week_id           INTEGER GENERATED ALWAYS AS IDENTITY,
     module_presentation_id          INTEGER NOT NULL,
@@ -487,6 +493,7 @@ CREATE TABLE IF NOT EXISTS mart.fact_module_presentation_activity_type_week (
         REFERENCES mart.dim_week (week_id)
 );
 
+--grain: 1 sinh viên trong 1 module 1 presentation 1 tuần
 CREATE TABLE IF NOT EXISTS mart.fact_student_module_presentation_week (
     student_week_id                     BIGINT GENERATED ALWAYS AS IDENTITY,
     student_module_presentation_id      BIGINT NOT NULL,
@@ -516,6 +523,39 @@ CREATE TABLE IF NOT EXISTS mart.fact_student_module_presentation_week (
     CONSTRAINT fk_mart_fact_student_module_presentation_week_dim_week
         FOREIGN KEY (week_id)
         REFERENCES mart.dim_week (week_id)
+);
+
+CREATE TABLE IF NOT EXISTS prediction.student_week_prediction (
+    prediction_id                       BIGINT GENERATED ALWAYS AS IDENTITY,
+    module_presentation_student_week_id BIGINT NOT NULL,
+    risk_probability                    NUMERIC(5, 4) NOT NULL,
+    predict_result                      VARCHAR(10) NOT NULL,
+
+    CONSTRAINT pk_prediction_student_week_prediction
+        PRIMARY KEY (prediction_id),
+
+    CONSTRAINT uq_prediction_student_week_prediction
+        UNIQUE (module_presentation_student_week_id),
+
+    CONSTRAINT fk_prediction_student_week_prediction_mart_fact_student_module_presentation
+        FOREIGN KEY (module_presentation_student_week_id)
+        REFERENCES mart.fact_student_module_presentation_week (student_week_id)
+);
+
+CREATE TABLE IF NOT EXISTS prediction.prediction_contribution (
+    contribution_id     BIGINT GENERATED ALWAYS AS IDENTITY,
+    prediction_id       BIGINT NOT NULL,
+    factor_name         VARCHAR(150) NOT NULL,
+    factor_value        TEXT NULL,
+    factor_rank         SMALLINT NOT NULL,
+    shap_value          NUMERIC(14, 4) NOT NULL,
+
+    CONSTRAINT pk_prediction_prediction_contribution
+        PRIMARY KEY (contribution_id),
+
+    CONSTRAINT fk_predcition_prediction_contribution_prediction_student_week_prediction
+        FOREIGN KEY (prediction_id )
+        REFERENCES prediction.student_week_prediction (prediction_id)
 );
 
 COMMIT;

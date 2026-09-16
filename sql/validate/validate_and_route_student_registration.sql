@@ -1,6 +1,5 @@
 DROP TABLE IF EXISTS pg_temp.student_registration_validation;
 
--- Chuan hoa chuoi va giu lai gia tri nguon de dua vao quarantine khi can.
 CREATE TEMP TABLE student_registration_validation AS
 WITH prepared_student_registration AS (
     SELECT
@@ -20,7 +19,6 @@ WITH prepared_student_registration AS (
     FROM raw.student_registration
 ),
 
--- Chi ep kieu khi chuoi co dang so nguyen va co do dai an toan.
 parsed_student_registration AS (
     SELECT
         *,
@@ -51,7 +49,6 @@ parsed_student_registration AS (
     FROM prepared_student_registration
 )
 
--- Ngay dang ky va ngay huy dang ky duoc phep NULL va duoc phep am.
 SELECT
     *,
     CASE
@@ -187,7 +184,6 @@ CREATE UNIQUE INDEX student_registration_validation_source_row_idx
 
 ANALYZE student_registration_validation;
 
--- Khoa ngoai nay dong thoi xac nhan module-presentation cua sinh vien.
 UPDATE student_registration_validation AS registration
 SET error_details = registration.error_details || JSONB_BUILD_ARRAY(
     JSONB_BUILD_OBJECT(
@@ -205,7 +201,6 @@ WHERE JSONB_ARRAY_LENGTH(registration.error_details) = 0
         AND student.id_student = registration.typed_id_student
   );
 
--- Giu dong hop le dau tien cua moi khoa dang ky hoc.
 WITH ranked_valid_registrations AS (
     SELECT
         source_row_number,
@@ -251,7 +246,6 @@ SET error_details = error_details || JSONB_BUILD_ARRAY(
 )
 WHERE valid_row_rank > 1;
 
--- Dung gia tri goc khi luu dong loi.
 INSERT INTO quarantine.student_registration (
     source_file,
     source_row_number,
@@ -274,7 +268,6 @@ SELECT
 FROM student_registration_validation
 WHERE JSONB_ARRAY_LENGTH(error_details) > 0;
 
--- Hai cot ngay giu NULL neu nguon khong cung cap.
 INSERT INTO clean.student_registration (
     code_module,
     code_presentation,
@@ -293,7 +286,6 @@ WHERE JSONB_ARRAY_LENGTH(error_details) = 0;
 
 DROP TABLE student_registration_validation;
 
--- Ket qua cuoi cung duoc Python doc de kiem tra doi soat.
 WITH row_counts AS (
     SELECT
         (SELECT COUNT(*) FROM raw.student_registration) AS raw_count,

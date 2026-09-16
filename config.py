@@ -114,6 +114,9 @@ TRANSFORM_STEPS = (
 )
 
 GET_TRAIN_DATA_FILE = require_sql_file("get_data", "get_train_data.sql")
+GET_PREDICT_DATA_FILE = require_sql_file("get_data", "get_predict_data.sql")
+
+
 # ---------------------------------------------------------------------------------------------
 # kiểm tra thư mục dữ liệu nguồn OULAD
 SOURCE_DATA_DIR = BASE_DIR / "data" / "raw"
@@ -219,10 +222,15 @@ MART_TABLES = {
     "dim_module_presentation"
 }
 
+PREDICTION_TABLES = {
+    "student_week_prediction",
+    "prediction_contribution"
+}
 
 # ---------------------------------------------------------------------------------------------
 # danh sách các cột cần thiết cho mô hình và dự đoán
 MODEL_FEATURES = {
+    "module_presentation_student_week_id": "int64",
     "id_student": "int64",
     "code_module": "str",
     "code_presentation": "str",
@@ -245,8 +253,7 @@ MODEL_FEATURES = {
     "coursework_submitted_count_week": "int64",
     "coursework_submitted_count_to_week": "int64",
     "coursework_late_count_to_week": "int64",
-    "coursework_overdue_count_to_week": "int64",
-    "final_result": "str"
+    "coursework_overdue_count_to_week": "int64"
 }
 
 
@@ -254,3 +261,6 @@ MODEL_FEATURES = {
 # thư mục lưu logs
 LOG_DIR = BASE_DIR / "logs"
 
+# ---------------------------------------------------------------------------------------------
+# thư mục lưu mô hình
+MODELS_DIR = BASE_DIR / "models"

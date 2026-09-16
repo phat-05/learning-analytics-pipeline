@@ -1,7 +1,6 @@
 DROP TABLE IF EXISTS pg_temp.student_vle_validation;
 DROP TABLE IF EXISTS pg_temp.student_vle_errors;
 
--- Chuan hoa va ep kieu raw mot lan, sau do dung lai ket qua o cac buoc sau.
 CREATE TEMP TABLE student_vle_validation AS
 WITH prepared_student_vle AS (
     SELECT
@@ -219,7 +218,6 @@ FROM parsed_student_vle;
 
 ANALYZE student_vle_validation;
 
--- Bang nay chi luu cac dong loi, khong sao chep toan bo du lieu lan nua.
 CREATE TEMP TABLE student_vle_errors (
     source_row_number BIGINT PRIMARY KEY,
     error_details JSONB NOT NULL
@@ -230,7 +228,6 @@ SELECT source_row_number, error_details
 FROM student_vle_validation
 WHERE JSONB_ARRAY_LENGTH(error_details) > 0;
 
--- Dung JOIN voi cac khoa da co index thay cho truy van con cho tung dong.
 WITH reference_validation AS (
     SELECT
         validation.source_row_number,
@@ -271,7 +268,6 @@ SELECT source_row_number, error_details
 FROM reference_validation
 WHERE JSONB_ARRAY_LENGTH(error_details) > 0;
 
--- Chi sap xep mot lan de giu dong dau va danh dau cac ban sao phia sau.
 WITH ranked_exact_rows AS (
     SELECT
         validation.source_row_number,
@@ -307,7 +303,6 @@ WHERE exact_row_rank > 1;
 
 ANALYZE student_vle_errors;
 
--- Quarantine van lay gia tri goc tu raw de bao toan kha nang truy nguoc.
 INSERT INTO quarantine.student_vle (
     source_file,
     source_row_number,
@@ -333,7 +328,6 @@ FROM raw.student_vle AS raw_row
 JOIN student_vle_errors AS error
   ON error.source_row_number = raw_row.source_row_number;
 
--- Cung dinh danh nhung sum_click khac nhau van duoc giu de mart tong hop.
 INSERT INTO clean.student_vle (
     code_module,
     code_presentation,
@@ -359,7 +353,6 @@ WHERE NOT EXISTS (
 DROP TABLE student_vle_errors;
 DROP TABLE student_vle_validation;
 
--- Ket qua cuoi cung duoc Python doc de kiem tra doi soat.
 WITH row_counts AS (
     SELECT
         (SELECT COUNT(*) FROM raw.student_vle) AS raw_count,

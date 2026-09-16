@@ -1,6 +1,5 @@
 DROP TABLE IF EXISTS pg_temp.student_assessment_validation;
 
--- Chuan hoa chuoi va giu lai gia tri nguon de dua vao quarantine khi can.
 CREATE TEMP TABLE student_assessment_validation AS
 WITH prepared_student_assessment AS (
     SELECT
@@ -20,7 +19,6 @@ WITH prepared_student_assessment AS (
     FROM raw.student_assessment
 ),
 
--- Chi ep kieu khi chuoi co hinh thuc va do dai an toan.
 parsed_student_assessment AS (
     SELECT
         *,
@@ -67,7 +65,6 @@ parsed_student_assessment AS (
     FROM prepared_student_assessment
 )
 
--- Score duoc phep NULL; date_submitted duoc phep am.
 SELECT
     *,
     CASE
@@ -224,7 +221,6 @@ CREATE UNIQUE INDEX student_assessment_validation_source_row_idx
 
 ANALYZE student_assessment_validation;
 
--- Kiem tra bai danh gia ton tai.
 UPDATE student_assessment_validation AS result
 SET error_details = result.error_details || JSONB_BUILD_ARRAY(
     JSONB_BUILD_OBJECT(
@@ -240,7 +236,6 @@ WHERE JSONB_ARRAY_LENGTH(result.error_details) = 0
       WHERE assessment.id_assessment = result.typed_id_assessment
   );
 
--- Xac nhan sinh vien thuoc dung module-presentation cua bai danh gia.
 UPDATE student_assessment_validation AS result
 SET error_details = result.error_details || JSONB_BUILD_ARRAY(
     JSONB_BUILD_OBJECT(
@@ -260,7 +255,6 @@ WHERE JSONB_ARRAY_LENGTH(result.error_details) = 0
       WHERE assessment.id_assessment = result.typed_id_assessment
   );
 
--- Giu dong hop le dau tien cua moi sinh vien-bai danh gia.
 WITH ranked_valid_results AS (
     SELECT
         source_row_number,
@@ -300,7 +294,6 @@ SET error_details = error_details || JSONB_BUILD_ARRAY(
 )
 WHERE valid_row_rank > 1;
 
--- Dung gia tri goc khi luu dong loi.
 INSERT INTO quarantine.student_assessment (
     source_file,
     source_row_number,

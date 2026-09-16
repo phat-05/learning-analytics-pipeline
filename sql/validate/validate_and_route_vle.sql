@@ -20,7 +20,6 @@ WITH prepared_vle AS (
     FROM raw.vle
 ),
 
--- Chi ep kieu khi chuoi co dang so nguyen va co do dai an toan.
 parsed_vle AS (
     SELECT
         *,
@@ -48,7 +47,6 @@ parsed_vle AS (
     FROM prepared_vle
 )
 
--- week_from va week_to duoc phep cung NULL.
 SELECT
     *,
     TO_JSONB(ARRAY_REMOVE(ARRAY[
@@ -223,7 +221,6 @@ CREATE UNIQUE INDEX vle_validation_source_row_idx
 
 ANALYZE vle_validation;
 
--- Kiem tra tai nguyen thuoc mot course hop le.
 UPDATE vle_validation AS resource
 SET error_details = resource.error_details || JSONB_BUILD_ARRAY(
     JSONB_BUILD_OBJECT(
@@ -240,7 +237,6 @@ WHERE JSONB_ARRAY_LENGTH(resource.error_details) = 0
         AND course.code_presentation = resource.clean_code_presentation
   );
 
--- Giu dong hop le dau tien cua moi id_site.
 WITH ranked_valid_resources AS (
     SELECT
         source_row_number,
@@ -280,7 +276,6 @@ SET error_details = error_details || JSONB_BUILD_ARRAY(
 )
 WHERE valid_row_rank > 1;
 
--- Dung gia tri goc khi luu dong loi.
 INSERT INTO quarantine.vle (
     source_file,
     source_row_number,
@@ -305,7 +300,6 @@ SELECT
 FROM vle_validation
 WHERE JSONB_ARRAY_LENGTH(error_details) > 0;
 
--- Khoang tuan giu NULL neu nguon khong cung cap.
 INSERT INTO clean.vle (
     id_site,
     code_module,
@@ -326,7 +320,6 @@ WHERE JSONB_ARRAY_LENGTH(error_details) = 0;
 
 DROP TABLE vle_validation;
 
--- Ket qua cuoi cung duoc Python doc de kiem tra doi soat.
 WITH row_counts AS (
     SELECT
         (SELECT COUNT(*) FROM raw.vle) AS raw_count,
