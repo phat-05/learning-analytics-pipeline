@@ -1,1 +1,0 @@
-{"f1_fail":0,"brier_score":0.3078530377668309,"accuracy":0.6921469622331692,"recall_fail":0,"precision_fail":0,"_wandb":{"runtime":0},"_runtime":0,"threshold":0.5,"_timestamp":1.788988981693183e+09,"_step":0,"pr_auc":0.3078530377668309}
